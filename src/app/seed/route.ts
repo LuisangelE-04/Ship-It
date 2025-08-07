@@ -2,17 +2,22 @@ import postgres from 'postgres';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
+interface PostgresError extends Error {
+  code?: string;
+}
+
 async function createUserRoleEnum() {
   try {
-    const result = await sql`
+    await sql`
       CREATE TYPE user_role
       AS
       ENUM('CUSTOMER', 'COURIER', 'ADMIN', 'SUPPORT');
     `;
     
     console.log('user_role enum created');
-  } catch(error: any) {
-    if (error.code !== '42710') {
+  } catch(error) {
+    const pgError = error as PostgresError;
+    if (pgError.code !== '42710') {
       throw error;
     }
     console.log('user_role enum already exists');
@@ -21,15 +26,16 @@ async function createUserRoleEnum() {
 
 async function createOrderStatusEnum() {
   try {
-    const result = await sql`
+    await sql`
       CREATE TYPE order_status
       AS
       ENUM ('PENDING', 'ACCEPTED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'FAILED_DELIVERY');
     `;
 
     console.log('order_status enum created');
-  } catch(error: any) {
-    if (error.code !== '42710') {
+  } catch(error) {
+    const pgError = error as PostgresError;
+    if (pgError.code !== '42710') {
       throw error;
     }
     console.log('order_status enum already exists');
@@ -44,8 +50,9 @@ async function createPackageTypeEnum() {
       ENUM ('ENVELOPE', 'SMALL_PACKAGE', 'MEDIUM_PACKAGE', 'LARGE_PACKAGE', 'FRAGILE', 'FOOD_DELIVERY', 'DOCUMENTS');
     `;
     console.log('package_type enum created');
-  } catch(error: any) {
-    if (error.code !== '42710') {
+  } catch(error) {
+    const pgError = error as PostgresError;
+    if (pgError.code !== '42710') {
       throw error;
     }
     console.log('package_type enum already exists');
@@ -60,8 +67,9 @@ async function createPriorityLevelEnum() {
       ENUM ('STANDARD', 'EXPRESS', 'URGENT', 'SAME_DAY');
     `;
     console.log('priority_level enum created');
-  } catch(error: any) {
-    if (error.code !== '42710') {
+  } catch(error) {
+    const pgError = error as PostgresError;
+    if (pgError.code !== '42710') {
       throw error;
     }
     console.log('priority_level enum already exists');
@@ -83,14 +91,13 @@ async function createUsersTable() {
       );
     `;
     console.log('users table created');
-  } catch(error: any) {
+  } catch(error) {
     console.error('Failed to create users table:', error);
     throw error;
   }
 }
 
 async function createUserProfilesTable() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
   await sql`
     CREATE TABLE IF NOT EXISTS user_profiles (
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -242,6 +249,7 @@ export async function GET() {
     await createAddressesTable();
     await createPackagesTable();
     await createOrdersTable();
+    await createPricingRulesTable();
     await createOrderTrackingTable();
     await createIndexes();
 
