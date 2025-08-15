@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import NavLinks from '@/components/navigation/nav-links';
-import { Menu } from 'lucide-react';
+import MobileMenu from './nav-hamburger';
 
 export default function Navbar() {
 
 	return (
-		<nav className='bg-white fixed w-full z-20 border-b'>
+		<nav className='bg-white fixed w-full z-20'>
 			<div className='mx-auto flex h-20 max-w-screen-xl items-center gap-8 px-4 sm:px-6 lg:px-8'>
 				<Link className='block text-teal-600' href='/'>
 					<span className='sr-only'>Home</span>
@@ -43,10 +43,7 @@ export default function Navbar() {
 							</Link>
 						</div>
 
-						<button className='block rounded-sm bg-gary-100 p-2.5 text-gray-600 transition hover:text-gray-600/75 md:hidden'>
-							<span className='sr-only'>Toggle menu</span>
-							<Menu strokeWidth={2.25} />
-						</button>
+            <MobileMenu />
 					</div>
 				</div>
 			</div>
