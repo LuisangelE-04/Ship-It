@@ -1,0 +1,21 @@
+{
+  "email": "test@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "pickupStreet": "123 Main St",
+  "pickupCity": "Springfield",
+  "pickupState": "IL",
+  "pickupZipCode": "62704",
+  "deliveryStreet": "456 Elm St",
+  "deliveryCity": "Chicago",
+  "deliveryState": "IL",
+  "deliveryZipCode": "60616",
+  "packageType": "SMALL_PACKAGE",
+  "weightKg": "2.5",
+  "dimensions": "30x20x10",
+  "isFragile": "true",
+  "specialInstructions": "Handle with care",
+  "declaredValue": "100",
+  "priority": "STANDARD",
+  "requestedPickupDate": "2025-08-25T10:00"
+}
