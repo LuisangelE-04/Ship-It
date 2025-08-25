@@ -54,14 +54,42 @@ const packageSchema = z.object({
     'FOOD_DELIVERY',
     'DOCUMENTS',
   ]),
-  weight_kg: z.coerce.number().positive(),
+  weightKg: z.coerce.number().positive(),
   dimensions: z.string().max(50).optional(),
-  is_fragile: z.coerce.boolean().optional().default(false),
-  special_instructions: z.string().optional(),
-  declared_value: z.coerce.number().min(0).optional().default(0),
+  isFragile: z.coerce.boolean().optional().default(false),
+  specialInstructions: z.string().optional().nullable(),
+  declaredValue: z.coerce.number().min(0).optional().default(0),
 });
 
+const CreatePackage = packageSchema;
 
+export async function createPackage(formData: FormData) {
+  const validateFields = CreatePackage.safeParse({
+    type: formData.get('type'),
+    weightKg: formData.get('weightKg'),
+    dimensions: formData.get('dimensions'),
+    isFragile: formData.get('isFragile'),
+    specialInstructions: formData.get('specialInstructions'),
+    declaredValue: formData.get('declaredValue'),
+  });
+
+  if (!validateFields.success) {
+    return {
+      errors: validateFields.error.flatten().fieldErrors,
+      messsage: 'Missing Fields, Failed to Add Package',
+    };
+  }
+
+  const { type, weightKg, dimensions, isFragile, specialInstructions, declaredValue } = validateFields.data;
+
+  const [createdPackage] = await sql `
+    INSERT INTO packages (type, weight_kg, dimensions, is_fragile, special_instructions, declared_value)
+    VALUES (${type}, ${weightKg}, ${dimensions ?? null}, ${isFragile}, ${specialInstructions ?? null}, ${declaredValue})
+    RETURNING id
+  `;
+
+  return { success: true, packageId: createdPackage.id };
+}
 
 const orderSchema = z.object({
   // Foreign keys
@@ -84,52 +112,3 @@ const orderSchema = z.object({
   estimated_price: z.coerce.number().nonnegative(),
   final_price: z.coerce.number().nonnegative().optional(),
 });
-
-/*
-export async function createShipment(formData: FormData) {
-  const raw = Object.fromEntries(formData.entries());
-
-  const result = shipmentSchema.safeParse(raw);
-  if (!result.success) {
-    return {
-      error: result.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Invoice',
-    };
-  }
-
-  const { 
-    pickupStreet, pickupCity, pickupState, pickupZipCode, pickupLat, pickupLong, 
-    deliveryStreet, deliveryCity, deliveryState, deliveryZipCode, deliveryLat, deliveryLong,
-    packageType, weightKg, dimensions, isFragile, specialInstructions, 
-    declaredValue, priority, requestedPickupDate
-  } = result.data;
-
-  const [pickup] = await sql `
-    INSERT INTO addresses (street, city, state, zip_code, country, latitude, longitude)
-    VALUES (${pickupStreet}, ${pickupCity}, ${pickupState}, ${pickupZipCode}, 'USA', ${pickupLat ?? null}, ${pickupLong ?? null})
-    RETURNING id
-  `;
-
-  const [delivery] = await sql `
-    INSERT INTO addresses (street, city, state, zip_code, country, latitude, longitude)
-    VALUES (${deliveryStreet}, ${deliveryCity}, ${deliveryState}, ${deliveryZipCode}, 'USA', ${pickupLat ?? null}, ${pickupLong ?? null})
-    RETURNING id
-  `;
-
-  const [order] = await sql `
-    INSERT INTO orders (
-      pickup_address_id, delivery_address_id,
-      package_type, weight_kg, dimensions, is_fragile, special_instructions, declared_value,
-      priority, requested_pickup_date, status
-    ) 
-    VALUES (
-      ${pickup.id}, ${delivery.id},
-      ${packageType}, ${weightKg}, ${dimensions ?? null}, ${isFragile ?? null},
-      ${specialInstructions ?? null}, ${declaredValue ?? null},
-      ${priority}, ${requestedPickupDate}, 'PENDING'
-    )
-    RETURNING id, order_number
-  `;
-
-  return { success: true, orderId: order.id, orderNumber: order.order_number };
-}*/
