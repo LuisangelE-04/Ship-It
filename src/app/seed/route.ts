@@ -171,7 +171,6 @@ async function createOrdersTable() {
       delivery_address_id UUID NOT NULL REFERENCES addresses(id),
       package_id UUID UNIQUE NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
       
-      requested_pickup_date TIMESTAMP WITH TIME ZONE NOT NULL,
       actual_pickup_date TIMESTAMP WITH TIME ZONE,
       estimated_delivery_date TIMESTAMP WITH TIME ZONE,
       actual_delivery_date TIMESTAMP WITH TIME ZONE,
